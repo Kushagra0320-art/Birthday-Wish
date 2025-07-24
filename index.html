@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -58,6 +19,7 @@
     }
     .container {
       max-width: 900px;
+      width: 100%;
       background: rgba(255, 255, 255, 0.95);
       padding: 40px;
       border-radius: 20px;
@@ -132,6 +94,9 @@
       padding: 40px;
       color: #fff;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+      max-height: 100vh;
+      padding-bottom: 20px;
     }
     #wish::before {
       content: '';
@@ -161,7 +126,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      animation: firework 1.5s ease-out infinite;
+      animation: firework 1.2s ease-out infinite;
       opacity: 0;
     }
     .firework:nth-child(1) { background: #ff4081; animation-delay: 0s; --x: 20vw; --y: -30vh; left: 10%; top: 20%; }
@@ -170,12 +135,12 @@
     .firework:nth-child(4) { background: #3f51b5; animation-delay: 0.6s; --x: -20vw; --y: 25vh; left: 70%; top: 50%; }
     .firework:nth-child(5) { background: #e91e63; animation-delay: 0.8s; --x: 25vw; --y: -20vh; left: 20%; top: 60%; }
     .firework:nth-child(6) { background: #2196f3; animation-delay: 1s; --x: -30vw; --y: 30vh; left: 40%; top: 70%; }
-    .firework:nth-child(7) { background: #ff9800; animation-delay: 1.2s; --x: 15vw; --y: -25vh; left: 60%; top: 20%; }
-    .firework:nth-child(8) { background: #9c27b0; animation-delay: 1.4s; --x: -15vw; --y: 20vh; left: 80%; top: 30%; }
-    .firework:nth-child(9) { background: #00bcd4; animation-delay: 0.1s; --x: 20vw; --y: -30vh; left: 15%; top: 40%; }
-    .firework:nth-child(10) { background: #f44336; animation-delay: 0.3s; --x: -25vw; --y: 25vh; left: 35%; top: 50%; }
-    .firework:nth-child(11) { background: #8bc34a; animation-delay: 0.5s; --x: 30vw; --y: -20vh; left: 55%; top: 60%; }
-    .firework:nth-child(12) { background: #ffc107; animation-delay: 0.7s; --x: -20vw; --y: 30vh; left: 75%; top: 70%; }
+    .firework:nth-child(7) { background: #ff9800; animation-delay: 0.2s; --x: 15vw; --y: -25vh; left: 60%; top: 20%; }
+    .firework:nth-child(8) { background: #9c27b0; animation-delay: 0.4s; --x: -15vw; --y: 20vh; left: 80%; top: 30%; }
+    .firework:nth-child(9) { background: #00bcd4; animation-delay: 0.6s; --x: 20vw; --y: -30vh; left: 15%; top: 40%; }
+    .firework:nth-child(10) { background: #f44336; animation-delay: 0.8s; --x: -25vw; --y: 25vh; left: 35%; top: 50%; }
+    .firework:nth-child(11) { background: #8bc34a; animation-delay: 1s; --x: 30vw; --y: -20vh; left: 55%; top: 60%; }
+    .firework:nth-child(12) { background: #ffc107; animation-delay: 0.2s; --x: -20vw; --y: 30vh; left: 75%; top: 70%; }
     @keyframes firework {
       0% { transform: translate(0, 0); opacity: 1; }
       100% { transform: translate(var(--x), var(--y)); opacity: 0; }
@@ -244,6 +209,12 @@
       p, li {
         font-size: 18px;
       }
+      #wish {
+        padding: 20px;
+      }
+      #wish p {
+        font-size: 18px;
+      }
       input, button {
         width: 90%;
         font-size: 18px;
@@ -258,6 +229,24 @@
       }
     }
     @media (max-width: 400px) {
+      .container {
+        padding: 15px;
+      }
+      #wish {
+        padding: 15px;
+      }
+      #wish p {
+        font-size: 16px;
+      }
+      h1 {
+        font-size: 28px;
+      }
+      p, li {
+        font-size: 16px;
+      }
+      input, button {
+        font-size: 16px;
+      }
       .game-grid {
         grid-template-columns: repeat(3, 60px);
       }
@@ -293,7 +282,7 @@
     </div>
     <div id="wish" class="section">
       <h1>My Heartfelt Birthday Wish</h1>
-      <p style="font-style: italic; font-size: 22px;">Happy Birthday Navya ji, Happy Happy Birthday, aaj sabse special din hai, yaar its ook ki aap ese gayi mujhe chodh ke aapki sitiuation esi thi koi baat nahi mai dukhi isliye hota hun kyon ki aap khud ko dosh deti ho, maat do khud ko dosh aapki koi galti nahi hai its okay, chalo chodo ye baat aaj aapka birthday hai yeeeeeeeeeeee!!!!! My wishes are always with you aap khub padh likh ke aage badho aapne papa mummy ka naam roshan karo khud ka naam roshan karo, or hamesha khush raho yaar aap meri hamesha 1st and last wish rahogi, i know apn ko dur hue time hogaya hai but aapki yaad bohot aati h kabhi kabhi tto bhai sahb itni ki bas dikh hi jao lekin koi baat nahi ye aapka decision tha and i respect it koi baat nahi, and bas aap jo chati ho woi ho bas i want this aap yaar aache se padhai karo doctor bano and kabhi bhi low feel ho ya maan na kare be jhijak baat karne aajana i will here for you, and take care of your self physically, mentally, emotionally and one more time Happy Birthday princess</p>
+      <p style="font-style: italic;">Happy Birthday Navya ji, Happy Happy Birthday, aaj sabse special din hai, yaar its ook ki aap ese gayi mujhe chodh ke aapki sitiuation esi thi koi baat nahi mai dukhi isliye hota hun kyon ki aap khud ko dosh deti ho, maat do khud ko dosh aapki koi galti nahi hai its okay, chalo chodo ye baat aaj aapka birthday hai yeeeeeeeeeeee!!!!! My wishes are always with you aap khub padh likh ke aage badho aapne papa mummy ka naam roshan karo khud ka naam roshan karo, or hamesha khush raho yaar aap meri hamesha 1st and last wish rahogi, i know apn ko dur hue time hogaya hai but aapki yaad bohot aati h kabhi kabhi tto bhai sahb itni ki bas dikh hi jao lekin koi baat nahi ye aapka decision tha and i respect it koi baat nahi, and bas aap jo chati ho woi ho bas i want this aap yaar aache se padhai karo doctor bano and kabhi bhi low feel ho ya maan na kare be jhijak baat karne aajana i will here for you, and take care of your self physically, mentally, emotionally and one more time Happy Birthday princess</p>
       <button onclick="replay()">Replay</button>
     </div>
   </div>
